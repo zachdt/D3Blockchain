@@ -20,6 +20,7 @@
     <button onclick='stop()'>Stop</button>
 </div>
 <p id="status">Not connected</p>
+<p id="amount">-----</p>
 <svg width="400" height="400" id="bubbleCanvas" class="vizCanvas"></svg>
 <script>
           var txNodes = [];
@@ -75,8 +76,8 @@
                   		txNodes.shift();
                   }
                   bubblesRestart();
-                       
                   document.getElementById("status").innerHTML = "tx: " + txHash;
+                  document.getElementById("amount").innerHTML = "amount: " + totalTxValue + " BTC";
 
                 }
               };                          
