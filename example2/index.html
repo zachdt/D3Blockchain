@@ -15,13 +15,15 @@
 </head>
 <body>
 <title>Realtime Bitcoin Transactions</title>
-<div>
-    <button onclick='start()'>Start</button>
-    <button onclick='stop()'>Stop</button>
+<div id="idcontrol">
+    <div>
+        <button id="start" onclick='start()'>Start</button>
+        <button id="stop" onclick='stop()'>Stop</button>
+    </div>
+    <p id="status">Not connected</p>
+    <p id="amount">-----</p>
 </div>
-<p id="status">Not connected</p>
-<p id="amount">-----</p>
-<svg width="400" height="400" id="bubbleCanvas" class="vizCanvas"></svg>
+<svg width="100%" height="35rem" id="bubbleCanvas" class="vizCanvas"></svg>
 <script>
           var txNodes = [];
             
@@ -60,7 +62,7 @@
               websocket.onmessage = function(event) { 
               	//message processing code goes here
                 var msgData = JSON.parse(event.data);
-                if (msgData.op == 'utx'){
+                if (msgData.op == 'utx'){   
                   var txHash = msgData.x.hash;
                 	var outputs = msgData.x.out;
                   var totalTxValue = 0;               
@@ -82,7 +84,7 @@
                 }
               };                          
             };
-            
+    
             function sendMessage(message) {
               document.getElementById("output").innerHTML = message;      
               websocket.send(message);
@@ -120,6 +122,8 @@
 <style>
 .vizCanvas {
     background-color:black;
+    align-content: center;
+    float: center;
   }
 </style>
 </html>
