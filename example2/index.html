@@ -13,26 +13,38 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/noUiSlider/3.1.1/jquery.nouislider.min.js"></script>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 </head>
-<body>
+<body id="body">
 <title>Realtime Bitcoin Transactions</title>
-<div id="idcontrol">
-    <div>
-        <button id="start" onclick='start()'>Start</button>
-        <button id="stop" onclick='stop()'>Stop</button>
+<div id="main">
+    <div id="idcontrol">
+        <div>
+            <button id="start" width  onclick='start()'>Start</button>
+            <button id="stop" onclick='stop()'>Stop</button>
+        </div>
+        <p id="amount"></p>
+        <p id="status">Not connected</p>
+        <p id='previous'></p>
+        <p class="list" id="1"></p>
+        <p class="list" id="2"></p>
+        <p class="list" id="3"></p>
+        <p class="list" id="4"></p>
+        <p class="list" id="5"></p>
+        <p class="list" id="5"></p>
     </div>
-    <p id="status">Not connected</p>
-    <p id="amount">-----</p>
+    <svg width="400" height="400" id="bubbleCanvas" class="vizCanvas"></svg>
 </div>
-<svg width="100%" height="35rem" id="bubbleCanvas" class="vizCanvas"></svg>
 <script>
           var txNodes = [];
-            
+          //
+          var tranactionLog = [6];
+          var lastBlockCount = 0;
+          //
           var svg = d3.select("#bubbleCanvas"),
               width = +svg.attr("width"),
               height = +svg.attr("height");
           var centerX = width / 2.0;
           var centerY = height / 2.0;
-          var counter = 0;
+          var counter = 0;  
           
           var node = svg.append("g")
               .attr("class", "nodes")
@@ -78,9 +90,24 @@
                   		txNodes.shift();
                   }
                   bubblesRestart();
-                  document.getElementById("status").innerHTML = "tx: " + txHash;
-                  document.getElementById("amount").innerHTML = "amount: " + totalTxValue + " BTC";
+                  
+                  document.getElementById("amount").innerHTML = "Amount: " + totalTxValue + " BTC";
 
+                  var pre = txHash.link("https://www.blockchain.com/btc/tx/"+txHash);
+                  var trans = pre.fontcolor("white");
+                  document.getElementById("status").innerHTML = "TXID: " + trans;
+
+                  document.getElementById("previous").innerHTML = "Previous Transactions: ";
+                   tranactionLog.unshift(trans);
+
+                  document.getElementById("1").innerHTML = "---->> "+tranactionLog[1];
+                  document.getElementById("2").innerHTML = "---->> "+tranactionLog[2];
+                  document.getElementById("3").innerHTML = "---->> "+tranactionLog[3];
+                  document.getElementById("4").innerHTML = "---->> "+tranactionLog[4];
+                  document.getElementById("5").innerHTML = "---->> "+tranactionLog[5];
+                  document.getElementById("6").innerHTML = "---->> "+tranactionLog[6];
+
+                  
                 }
               };                          
             };
@@ -92,7 +119,7 @@
                         
         function bubblesRestart() {
           var updateSelection = node.data(txNodes, function(d) { return d.id;}); //updated transactions
-        	updateSelection.exit().remove(); //removed transactions
+        	updateSelection.exit().remove(); //removed transactions     
           var enterSelection = updateSelection.enter()
           .append("circle")
           .attr("r", function(d){return d.scaledValue;})
@@ -120,10 +147,36 @@
 </body>
 
 <style>
+#body{
+    background: grey;
+}
 .vizCanvas {
-    background-color:black;
+    background-color:grey;
     align-content: center;
-    float: center;
+    margin-left: 20rem;
+    margin-top: 5rem;
+    display: table-cell;
   }
+#start{
+    background-color: green;
+    color: white;
+    size: 200%;
+}
+#idcontrol{
+    color: white;
+    justify-content: center;
+    float: left;
+    display: table-cell;
+    margin-top: 10rem;
+    margin-left: 10rem;
+}
+#main{
+    display: table-row;
+    margin: 20rem;
+}
+#list{
+    tex;
+    text-decoration: none;
+}
 </style>
 </html>
