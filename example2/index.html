@@ -18,9 +18,17 @@
 <div id="main">
     <div id="idcontrol">
         <div>
+            <p id="title">Bitcoin Blockchain Transaction Tracker!</p>
             <button id="start" width  onclick='start()'>Start</button>
             <button id="stop" onclick='stop()'>Stop</button>
+            
         </div>
+        <div>
+            <p id="block"></p>
+            <p id="blocktime"></p>
+            <p id="blocksize"></p>
+        </div>
+        <p id="trans"></p>
         <p id="amount"></p>
         <p id="status">Not connected</p>
         <p id='previous'></p>
@@ -29,10 +37,11 @@
         <p class="list" id="3"></p>
         <p class="list" id="4"></p>
         <p class="list" id="5"></p>
-        <p class="list" id="5"></p>
+        <p class="list" id="6"></p>
     </div>
     <svg width="400" height="400" id="bubbleCanvas" class="vizCanvas"></svg>
 </div>
+
 <script>
           var txNodes = [];
           //
@@ -58,7 +67,7 @@
             .alphaTarget(1)
             .on("tick", bubblesTicked);
                           
-        		var websocket;
+        	var websocket;
             
             function init() {          
               websocket = new WebSocket("wss://ws.blockchain.info/inv");
@@ -74,52 +83,64 @@
               websocket.onmessage = function(event) { 
               	//message processing code goes here
                 var msgData = JSON.parse(event.data);
+                if (msgData.op == 'block'){
+                    var blockID = msgData.x.blockIndex;
+                    var time = msgData.x.time;
+                    var size = msgData.x.size;
+
+                    document.getElementById("block").innerHTML = "Block ID: " + blockID;
+                    document.getElementById("blocktime").innerHTML = "Time of Block " + time;
+                    document.getElementById("blocksize").innerHTML = "Block Size: " + size;
+
+                }
                 if (msgData.op == 'utx'){   
-                  var txHash = msgData.x.hash;
-                	var outputs = msgData.x.out;
-                  var totalTxValue = 0;               
-                  for(var j=0;j<outputs.length;j++){
+                    var txHash = msgData.x.hash;
+                    var outputs = msgData.x.out;
+                    var totalTxValue = 0;               
+                    for(var j=0;j<outputs.length;j++){
                 		var output = outputs[j];
-                    totalTxValue += output.value;
+                        totalTxValue += output.value;
                 	}
-                  totalTxValue /= 100000000;
-                  var newTx = {id:txHash, value: totalTxValue, scaledValue: 5 + Math.log(totalTxValue) };
-                  txNodes.push(newTx);
-                  if (txNodes.length > 400)
-                  {
+                    totalTxValue /= 100000000;
+                    var newTx = {id:txHash, value: totalTxValue, scaledValue: 5 + Math.log(totalTxValue) };
+                    txNodes.push(newTx);
+                    if (txNodes.length > 400)
+                    {
                   		txNodes.shift();
-                  }
-                  bubblesRestart();
-                  
-                  document.getElementById("amount").innerHTML = "Amount: " + totalTxValue + " BTC";
+                    }
+                    bubblesRestart();
 
-                  var pre = txHash.link("https://www.blockchain.com/btc/tx/"+txHash);
-                  var trans = pre.fontcolor("white");
-                  document.getElementById("status").innerHTML = "TXID: " + trans;
+                    document.getElementById("amount").innerHTML = "Amount: " + totalTxValue + " BTC";
 
-                  document.getElementById("previous").innerHTML = "Previous Transactions: ";
-                   tranactionLog.unshift(trans);
+                    var pre = txHash.link("https://www.blockchain.com/btc/tx/"+txHash);
+                    var trans = pre.fontcolor("white");
+                    document.getElementById("status").innerHTML = "TXID: " + trans;
 
-                  document.getElementById("1").innerHTML = "---->> "+tranactionLog[1];
-                  document.getElementById("2").innerHTML = "---->> "+tranactionLog[2];
-                  document.getElementById("3").innerHTML = "---->> "+tranactionLog[3];
-                  document.getElementById("4").innerHTML = "---->> "+tranactionLog[4];
-                  document.getElementById("5").innerHTML = "---->> "+tranactionLog[5];
-                  document.getElementById("6").innerHTML = "---->> "+tranactionLog[6];
+                    document.getElementById("previous").innerHTML = "Previous Transactions: ";
+                    tranactionLog.unshift(trans);
+
+                    document.getElementById("1").innerHTML = "---->> "+tranactionLog[1];
+                    document.getElementById("2").innerHTML = "---->> "+tranactionLog[2];
+                    document.getElementById("3").innerHTML = "---->> "+tranactionLog[3];
+                    document.getElementById("4").innerHTML = "---->> "+tranactionLog[4];
+                    document.getElementById("5").innerHTML = "---->> "+tranactionLog[5];
+                    document.getElementById("6").innerHTML = "---->> "+tranactionLog[6];
 
                   
                 }
+                
               };                          
             };
     
             function sendMessage(message) {
-              document.getElementById("output").innerHTML = message;      
-              websocket.send(message);
+                document.getElementById("output").innerHTML = message;      
+                websocket.send(message);
             }
                         
         function bubblesRestart() {
           var updateSelection = node.data(txNodes, function(d) { return d.id;}); //updated transactions
-        	updateSelection.exit().remove(); //removed transactions     
+            updateSelection.exit().remove(); //removed transactions 
+            
           var enterSelection = updateSelection.enter()
           .append("circle")
           .attr("r", function(d){return d.scaledValue;})
@@ -134,12 +155,15 @@
             .attr("cy", function(d) { return d.y + centerY; });
           }
             
-            function start() {
+        function start() {
             websocket.send('{"op":"unconfirmed_sub"}');
-            }
+            //websocket.send('{"op":"blocks_sub"}');
+            document.getElementById("trans").innerHTML = "Transaction: ";
+        }
             
             function stop() {
-            	websocket.send('{"op":"unconfirmed_unsub"}');
+                websocket.send('{"op":"unconfirmed_unsub"}');
+                //websocket.send('{"op":"blocks_unsub"}');
             }
                   
             window.addEventListener("load", init, false);
@@ -153,9 +177,10 @@
 .vizCanvas {
     background-color:grey;
     align-content: center;
-    margin-left: 20rem;
+    margin-left: 25rem;
     margin-top: 5rem;
     display: table-cell;
+    table-layout: fixed;
   }
 #start{
     background-color: green;
@@ -167,15 +192,18 @@
     justify-content: center;
     float: left;
     display: table-cell;
-    margin-top: 10rem;
+    table-layout: fixed;
+    margin-top: 5rem;
     margin-left: 10rem;
+    min-width: 550px;
+    width: 550px;
 }
 #main{
     display: table-row;
+    table-layout: fixed;
     margin: 20rem;
 }
 #list{
-    tex;
     text-decoration: none;
 }
 </style>
